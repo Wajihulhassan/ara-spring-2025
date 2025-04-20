@@ -1,0 +1,127 @@
+%
+% File          : siis-latex.sty 
+% Description   : SIIS Laboratory Latex Macros
+% Last Modified : May 17, 2005
+% By            : Patrick McDaniel
+% 
+
+% Item separator
+\newcommand{\itembase}{\setlength{\itemsep}{-2pt}}
+
+% Anonymizer
+\newcommand{\setanonymous}[1]{
+\newboolean{myanonymous}\setboolean{myanonymous}{#1}}
+\newcommand{\anon}[2]{\ifthenelse{\boolean{myanonymous}}{#1}{#2}}
+\setanonymous{true}
+
+% Addree-me
+\newcommand{\addressme}[1]{
+{\noindent{\it #1}}
+}
+
+% NSF Proposal Stuff
+\newcounter{nsfsection}
+\setcounter{nsfsection}{1}
+\renewcommand{\thesection}{\Alph{nsfsection}.\arabic{section}}
+%\renewcommand{\thesubsection}{\Alph{section}}
+
+\newcommand{\nsfsection}[1]{
+\stepcounter{nsfsection}
+\noindent
+{\Large\bf \Alph{nsfsection}.~~~#1}
+\vspace{-0.6em}
+\noindent
+}
+
+\renewcommand{\refname}{\stepcounter{nsfsection}\Alph{nsfsection}.~~REFERENCES CITED}
+
+% Note
+\newcommand{\siisnote}[1]{
+\begin{itemize}
+\item {\it #1}
+\end{itemize}
+}
+
+\newcommand{\futurework}{
+\vspace{4pt}
+\noindent
+{\it Proposed work} -
+}
+
+%
+% Challenges
+\newcounter{challenge-section}
+\setcounter{challenge-section}{1}
+\newcounter{challenge}
+\setcounter{challenge}{1}
+\newcommand{\challenge}[2]{
+\noindent
+{\bf Challenge~\arabic{challenge-section}\alph{challenge} -- {\it #1}.}
+\stepcounter{challenge}
+#2
+
+\vspace{6pt}
+}
+
+\begin{comment}
+% For ACM formatting specifications
+\newfont{\ixpt}{ptmr at 9pt}
+\newfont{\ninept}{ptmr at 9pt}
+\newfont{\ttlfnt}{phvb at 18pt}
+\newfont{\aufnt}{phvr at 12pt}
+\newfont{\affaddr}{phvr at 10pt}
+\newfont{\eaddrfnt}{pcrb at 10pt}
+\newfont{\secfnt}{ptmb at 16pt}
+
+\def\secsize{\@setsize\secsize{16pt}\xiipt\@xiipt}
+%need a 12 pt font size for section and abstract headings
+\def\section{\@startsection {section}{1}{\z@}{-10\p@ \@plus -4\p@ \@minus -2\p@}%
+{4\p@}{\secsize\bf}}
+
+%need a 11 pt font size for subsection headings
+\def\subsize{\@setsize\subsize{11pt}\xipt\@xipt}
+\def\subsection{\@startsection {subsection}{2}{\z@}{-8\p@ \@plus -2\p@ \@minus -\p@}%
+{4\p@}{\subsize\bf}}
+
+
+\def\subsection{\@startsection {subsection}{2}{\z@}{-8\p@ \@plus -2\p@ \@minus -\p@}%
+{4\p@}{\subsize\bf}}
+
+\newfont{\subsecfnt}{ptmri at 10pt}
+\def\subsubsection{\@startsection{subsubsection}{3}{\z@}{-8\p@ \@plus -2\p@ \@minus -\p@}%
+ {4\p@}{\subsecfnt}}
+
+
+\end{comment}
+
+
+\newfont{\secfnt}{ptmb at 16pt}
+\def\secsize{\@setsize\secsize{16pt}\xiipt\@xiipt}
+%need a 12 pt font size for section and abstract headings
+\def\section{\@startsection {section}{1}{\z@}{-10\p@ \@plus -4\p@ \@minus -2\p@}%
+{4\p@}{\secsize\bf}}
+
+%need a 11 pt font size for subsection headings
+\def\subsize{\@setsize\subsize{11pt}\xipt\@xipt}
+\def\subsection{\@startsection {subsection}{2}{\z@}{-8\p@ \@plus -2\p@ \@minus -\p@}%
+{4\p@}{\subsize\bf}}
+
+
+\def\subsection{\@startsection {subsection}{2}{\z@}{-8\p@ \@plus -2\p@ \@minus -\p@}%
+{4\p@}{\subsize\bf}}
+
+\newfont{\subsecfnt}{ptmri at 10pt}
+\def\subsubsection{\@startsection{subsubsection}{3}{\z@}{-8\p@ \@plus -2\p@ \@minus -\p@}%
+ {4\p@}{\subsecfnt}}
+
+\addtolength{\textfloatsep}{-1.5em}
+
+\newcounter{taskcounter}
+\setcounter{taskcounter}{1}
+\newcommand{\task}[1]{
+\vspace{6pt}
+\noindent
+{\bf Task \arabic{taskcounter}}.~({\it #1})
+\stepcounter{taskcounter}
+}
+

@@ -1,0 +1,70 @@
+\centering 
+\scalebox{0.6}{
+\begin{tikzpicture}[
+    thrust/.style={align=center,font=\normalsize\bfseries\rmfamily},
+    task/.style={draw,fill=black!10,rounded corners=0.25cm,align=center,outer sep=0.10cm,font=\normalsize\rmfamily},
+    start/.style={semicircle,draw,very thick,align=center,outer sep=0.10cm,inner sep=0.2cm,font=\normalsize\bfseries\rmfamily},
+    connection/.style={-latex,very thick,black},
+    division/.style={very thick,dashed,black}
+]
+
+\node[start] (start) at (0,0) {Start};
+
+% Define Task Nodes
+\node[task,text width=2.5cm] (public-datasets) at (-4.0,0.5) {(T\ref{task:public-datasets}) Public\\ Datasets};
+\node[task,text width=2.5cm] (provenance-graph) at (-8.00,1.25) {(T\ref{task:prov-collection}) Universal Provenance Collection};
+\node[task,text width=2.5cm] (graph-storage) at (-8,4.0) {(T\ref{task:graph-storage}) Graph Storage};
+
+
+%%\node[task,text width=2.5cm] (root-cause) at (-3.25,4.5) {(T\ref{}) Root Cause\\ Embedding};
+\node[task,text width=2.5cm] (edge-embedding) at (-2.5,5.0) {(T\ref{task:structural-embeddings}) Structural Embeddings};
+\node[task,text width=2.5cm] (node-embedding) at (2.5,5.0) {(T\ref{task:semantic-embeddings}) Semantic Embeddings};
+\node[task,text width=3.0cm] (embedding-framework) at (0,2.0) {(T\ref{task:flurry}) Unified \\ Embedding Framework};
+
+
+% \node[task,text width=2.5cm] (synthetic) at (4.0,0.5) {(T\ref{}) Synthetic Graphs};
+\node[task,text width=3cm] (models) at (4.0,0.5) {(T\ref{task:integrate-embeddings}) IDS \\Integration};
+\node[task,text width=2.75cm] (explainable-models) at (6.25,2.25) {(T\ref{task:explainability}) Explainable \\ Models};
+\node[task,text width=3.0cm] (incident-response) at (8.0,4.0) {(T\ref{task:visualization}) Graph Visualization};
+
+
+% Connections Between Tasks
+\draw[connection] (start) -- (public-datasets);
+% \draw[connection, bend left=10] (start) to node [above=0.25]{} (provenance-collection);
+% \draw[connection] (provenance-collection) -- (provenance-graph);
+\draw[connection] (provenance-graph) -- (graph-storage);
+% \draw[connection, bend right=25] (provenance-graph) to node [above=0.25]{} (graph-storage);
+\draw[connection] (public-datasets) -- (provenance-graph);
+\draw[connection, bend right=25] (public-datasets) to node [above=0.25]{} (graph-storage);
+% \draw[connection] (system-oracles) -- (ids-benchmark);
+
+\draw[connection] (start) -- (embedding-framework);
+%%\draw[connection] (embedding-framework) -- (root-cause);
+\draw[connection] (embedding-framework) -- (edge-embedding);
+\draw[connection] (embedding-framework) -- (node-embedding);
+
+% \draw[connection] (start) -- (synthetic);
+\draw[connection, bend right=10] (start) to node [above=0.25]{} (models);
+% \draw[connection] (synthetic) -- (models);
+\draw[connection, bend left=10] (models) to node [above=0.25]{}  (explainable-models);
+\draw[connection, bend right=50] (models) to node [above=0.25]{} (incident-response);
+\draw[connection] (explainable-models) -- (incident-response);
+
+% Define Thrusts
+
+%\node[thrust,text width=4.0cm] (policies) at (-9.0,6.25) {Thrust~\ref{th:policies}: \\ Flow-Sensitive \\ Policies};
+%\node[thrust,text width=5.0cm] (integration) at (0,8.25) {Thrust~\ref{th:integration}: \\ Systems and Applications \\ Integration};
+\node[thrust,text width=4.0cm] (defense) at (0,7.25) {(\ref{sec:res:graph-analytics}) \\Graph \\ Representation Learning};
+\node[thrust,text width=5.0cm] (benchmark) at (-9.25,5.75) {(\ref{sec:res:testbed}) \\  Universal Provenance\\ Testbed};
+\node[thrust,text width=4.0cm] (hunting) at (9.25,5.75) {(\ref{sec:res:prov-application}) \\ Threat Detection\\ and Response Integrations};
+
+% Define Thrust relationships
+\draw[connection,ultra thick,bend left=5] (benchmark) to node [above=0.25] {\textbf{Informs}} (defense);
+\draw[connection,ultra thick,bend right=5] (hunting) to node [above=0.25] {\textbf{Applies}} (defense);
+
+% Draw divisions between Thrusts
+\draw[division] (start) -- (-7.0,5.5);
+\draw[division] (start) -- (7.0,5.5);
+
+\end{tikzpicture}
+}

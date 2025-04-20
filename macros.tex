@@ -1,0 +1,214 @@
+% Define bar chart colors
+%
+\definecolor{bblue}{HTML}{4F81BD}
+\definecolor{rred}{HTML}{C0504D}
+\definecolor{ggreen}{HTML}{9BBB59}
+\definecolor{ppurple}{HTML}{9F4C7C}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{darkgray}{rgb}{0.66, 0.66, 0.66}
+\definecolor{myred}{HTML}{ebc3b7}
+\definecolor{myblue}{HTML}{bfebf3}
+\definecolor{mygreen}{HTML}{daebc3}
+\definecolor{myyellow}{HTML}{fff4c0}
+\definecolor{myorange}{HTML}{ffc58a}
+\definecolor{comment-red}{rgb}{0.8,0,0}
+\definecolor{gray}{RGB}{136,136,136}
+
+\hypersetup{
+     colorlinks=true,
+     linkcolor=mauve,
+     citecolor=mauve,
+     filecolor=black,
+     urlcolor=bblue
+}
+\urlstyle{sf}
+
+\newcommand\inlineeqno{\stepcounter{equation}\ (\theequation)}
+
+\newcommand\mycommfont[1]{\footnotesize\ttfamily{\scriptsize \texttt{#1}}}
+\SetCommentSty{mycommfont}
+
+\renewcommand{\rothead}[2][60]{\makebox[9mm][c]{\rotatebox{#1}{\makecell[c]{#2}}}}
+\makeatletter
+\newcommand\footnoteref[1]{\protected@xdef\@thefnmark{\ref{#1}}\@footnotemark}
+\makeatother
+
+%%% Meta MA
+\newcommand{\DefMacro}[2]{\expandafter\newcommand\csname rmk-#1\endcsname{#2}}
+\newcommand{\UseMacro}[1]{\csname rmk-#1\endcsname}
+\newcommand{\Caption}[1]{\caption{#1}}
+\newcommand{\CodeIn}[1]{{\small \texttt{#1}}}
+%%\newcommand{\Comment}[1]{}
+\newcommand{\Space}[1]{}
+\newcommand{\NA}{-}
+\newcommand{\Fix}[1]{\textcolor{red}{#1}}
+
+\DeclareFixedFont{\titlefont}{T1}{ppl}{b}{it}{0.3in}
+\newcommand{\BIEntry}[1]{\noindent\textbf{\textit{#1}}}
+
+\newcommand{\TTitle}[1]{\textbf{#1}}
+\newcommand{\TTitleMath}[1]{$\bm{#1}$}
+%\newcommand{\TDeEmph}[1]{\textcolor{gray}{#1}}
+\newcommand{\MoreThanOne}[1]{\textcolor{BrickRed}{#1}}
+\newcommand{\Bullet}{$\star$}
+\newcommand{\Plan}[1]{\textcolor{blue}{#1}}
+\newcommand{\ClassLevelMark}{$^c$}
+\newcommand{\ClassLoaderMark}{$^l$}
+\newcommand{\specialcell}[2][c]{\begin{tabular}[#1]{@{}l@{}}#2\end{tabular}}
+\newcommand{\Contri}[1]{\noindent\textbf{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\textred}[1]{\textcolor{comment-red}{#1}}
+\newcommand{\pgwrapper}[2]{\textred{#1: #2}}
+\newcommand{\TODO}[1]{\pgwrapper{TODO}{#1}}
+\makeatletter
+\newcommand{\labitem}[2]{%
+\def\@itemlabel{\textbf{#1}}
+\item
+\def\@currentlabel{#1}\label{#2}}
+\makeatother
+\ifcsdef{sectionautorefname}{%
+  \renewcommand{\sectionautorefname}{\S}
+  \renewcommand{\subsectionautorefname}{\S}
+}{%
+  \providecommand{\sectionautorefname}{\S}
+  \providecommand{\subsectionautorefname}{\S}
+}
+\newcommand{\RomanNum}[1]{%
+  \textup{\uppercase\expandafter{\romannumeral#1}}%
+}
+\SetKwProg{Fn}{Function}{}{}
+
+% sema
+\newcommand{\shl}{\ \cc{<}\cc{<}\ }
+\newcommand{\shr}{\ \cc{>}\cc{>}\ }
+\newcommand{\x}{$\times$\xspace}
+
+\newcommand{\PP}[1]{
+\vspace{2px}
+\noindent{\bf \IfEndWith{#1}{.}{#1}{#1.}}
+}
+
+\newcommand{\ra}[1]{\renewcommand{\arraystretch}{#1}}
+\newcommand{\V}{\checkmark}
+\newcommand{\X}{{\footnotesize $\times$}\xspace}
+\renewcommand{\O}{\phantom{0}}
+
+\newcommand{\etal}{\textit{et al}.\xspace}
+\newcommand{\ie}{\textit{i}.\textit{e}.}
+\newcommand{\eg}{\textit{e}.\textit{g}.}
+\newcommand{\URL}{\url}
+\renewcommand{\paragraph}[1]{\smallskip\noindent\emph{#1}\quad}
+
+\makeatletter
+\newcommand*\refcounter[1]{%
+   \protected@edef\@currentlabel{\csname p@#1\endcsname\csname the#1\endcsname}}
+\makeatother
+
+\makeatletter
+\newcommand*\newCounter[2]{%
+   \@ifundefined{c@#1}
+     {\newcounter{#1}%
+      \setcounter{#1}{#2}}
+     {\setcounter{#1}{#2}}}
+\makeatother
+
+\newCounter{taskCounter}{1}
+
+\newcommand{\Task}[2]{\refcounter{taskCounter}\label{#2} \smallskip \noindent \textbf{Task \thetaskCounter.} \emph{(#1)}\xspace\stepcounter{taskCounter}}
+
+\DeclareRobustCommand{\circled}[1]{%
+  \tikz[baseline=(char.base)]{%
+	\node[shape=circle,draw,inner sep=2pt] (char) {#1};%
+   }
+}
+
+\newcounter{goalctr}
+\newcommand{\goal}{
+  \addtocounter{goalctr}{1}
+  \noindent {\bf Research Goal \arabic{goalctr}:}
+}
+
+\newcommand{\Paragraph}[1]{\vspace{.1in}\noindent{\bf #1.}\quad}
+\newcommand{\work}{\vspace{.05in}\noindent{\it Proposed work: }}
+
+\newcommand{\proposedwork}[1]{\smallskip \noindent \emph{Proposed Work} - \textbf{#1}\xspace}
+
+\newcommand{\eval}{\vspace{.05in}{\underline{Evaluation:} }}
+
+\newcommand{\fp}{\vspace*{0.07in}\noindent}
+
+%%%%%%%%%%%%%%%% Custom Macros For Paper  %%%%%%%%%%%%%%%%
+
+\newcommand{\wajih}[1]{\textcolor{orange}{Wajih: #1}}
+\newcommand{\mycomment}[1]{}
+\newcommand{\naive}{na\"{\i}ve\xspace}
+% Acronyms
+\newcommand{\aptA}{APT\xspace}
+\newcommand{\idsA}{IDS\xspace}
+\newcommand{\ganA}{GAN\xspace}
+\newcommand{\gnnA}{GNN\xspace}
+\newcommand{\flA}{FL\xspace}
+\newcommand{\edrA}{EDR\xspace}
+\newcommand{\dpvA}{DP\xspace}
+\newcommand{\tiA}{TI\xspace}
+
+% Full names with first letter in lower case
+\newcommand{\aptL}{advanced persistent threat\xspace}
+\newcommand{\idsL}{intrusion detection system\xspace}
+\newcommand{\ganL}{generative adversarial network\xspace}
+\newcommand{\gnnL}{graph neural network\xspace}
+\newcommand{\flL}{federated learning\xspace}
+\newcommand{\edrL}{endpoint detection and response\xspace}
+\newcommand{\dpvL}{data provenance\xspace}
+\newcommand{\tiL}{threat intelligence\xspace}
+
+% Full names with first letter in upper case
+\newcommand{\aptU}{Advanced Persistent Threat\xspace}
+\newcommand{\idsU}{Intrusion Detection System\xspace}
+\newcommand{\ganU}{Generative Adversarial Network\xspace}
+\newcommand{\gnnU}{Graph Neural Network\xspace}
+\newcommand{\flU}{Federated Learning\xspace}
+\newcommand{\edrU}{Endpoint Detection and Response\xspace}
+\newcommand{\dpvU}{Data Provenance\xspace}
+\newcommand{\tiU}{Threat Intelligence\xspace}
+
+\newcommand{\uva}{University of Virginia\xspace}
+
+\newcommand{\gnn}{Graph Neural Network\xspace}
+\newcommand{\gnnshort}{GNN\xspace}
+\newcommand{\grl}{Graph Representation Learning\xspace}
+\newcommand{\grlshort}{GRL\xspace}
+\newcommand{\provenance}{provenance\xspace}
+\newcommand{\threatrace}{ThreaTrace\xspace}
+\newcommand{\fscore}{F-Score\xspace}
+\newcommand{\optc}{OpTC\xspace}
+\newcommand{\unicorn}{Unicorn\xspace}
+\newcommand{\streamspot}{StreamSpot\xspace}
+\newcommand{\xgb}{XGBoost\xspace}
+\newcommand{\lines}{1000\xspace}
+\newcommand{\wordvec}{Word2Vec\xspace}
+\newcommand{\graphsage}{GraphSage\xspace}
+\newcommand{\bigEI}[1]{$\mathcal{E}_{#1}$\xspace}
+
+\newcommand{\darpa}{DAPRA\xspace}
+\newcommand{\provdetector}{ProvDetector\xspace}
+\newcommand{\downstream}{lightweight\xspace}
+
+\newcommand{\ids}{IDS\xspace}
+\newcommand{\logs}{system logs\xspace}
+
+\newcommand{\Sysa}{\mbox{\textsc{FedDetect}}\xspace}
+\newcommand{\Sysb}{\mbox{\textsc{QueryAI}}\xspace}
+
+%%% add new def
+\usepackage{dsfont}
+\def\vw{{\bm{w}}}
+\def\gX{{\mathcal{X}}}
+\def\gA{{\mathcal{A}}}
+\def\gL{{\mathcal{L}}}
+
+\usepackage{pdfpages} % For including PDF pages
