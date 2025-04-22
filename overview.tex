@@ -1,215 +1,71 @@
 \section*{Introduction}
 
-Cloud Application Detection and Response (CADR) represents a necessary evolution in runtime cloud security. Traditional Cloud Detection and Response (CDR) systems, which aggregate logs at a centralized point for analysis, struggle to detect the full scope of modern cloud-native threats that span application, workload, and cloud control layers. Existing approaches either focus too narrowly on individual layers or fail to provide sufficient context for detection and investigation~\cite{berthoty2025runtime}. Real-world attacks such as MoveIT, Log4j, and Spring4Shell illustrate how attackers exploit application vulnerabilities, pivot through containers, and ultimately access cloud resources without raising coherent alerts across layers.
-
+Modern enterprises run cloud applications that span multiple layers, including application logic, container runtimes, and cloud services, creating complex attack surfaces. Adversaries increasingly chain exploits across these layers, yet existing defenses remain fragmented. Cloud-Native Application Protection Platforms (CNAPPs)~\cite{wiz_cdr,orca_cnapp} focus on configuration and posture management but offer little visibility into live application behavior. Host-based EDRs~\cite{crowdstrike} flag isolated process anomalies without cloud context, and cloud-native tools~\cite{aws_guardduty,aws_cdr,paloalto_cdr} detect suspicious API activity without linking it to application or host-level causes. This siloed monitoring leaves security teams blind to the full narrative of multi-stage attacks and forces them to manually correlate disconnected alerts, often too late to prevent damage.
 
 \begin{wrapfigure}{R}{.40\linewidth}
     \centering \includegraphics[width=0.40\textwidth]{fig/moveit.png}
-    \caption{TODO}
+    \caption{Timeline of the MOVEit attack highlighting the need for cross-layer visibility across application, workload, and cloud layers for complete detection and investigation.}
     \label{fig:example:moveit}
     \vspace{-2ex}
 \end{wrapfigure}
 
-The MoveIT breach exemplifies the need for a fundamentally new defense paradigm. The attack initiated with a SQL injection at the application layer, which led to remote shell access in the workload layer, and culminated in unauthorized access to cloud data via inherited IAM credentials. Each phase of the attack occurred in a different plane of the cloud environment, but existing tools—CNAPPs, EDRs, and SIEMs—were unable to holistically observe or correlate the full attack chain in real time. Most importantly, even when alerts were raised, they lacked causality, context, and actionable triage support. As highlighted in Berthoty’s analysis~\cite{berthoty2025runtime}, many tools could detect isolated pieces of the attack—such as unusual file access or anomalous role assumption—but lacked the cross-layer reasoning needed to tell the full story.
+Cloud Application Detection and Response (CADR) offers a necessary shift by unifying observability across application, workload, and cloud layers. Existing cloud detection systems centralize logs for analysis but struggle with correlating events across stack boundaries. This limitation stems from a deeper architectural gap: {\it lack of runtime provenance}. CNAPPs lack execution context, EDRs ignore cloud identities, and cloud-native tools miss process lineage. Without end-to-end causal visibility, advanced threats remain undetected or poorly explained~\cite{omegalog,dossier}.
 
 
-This fragmentation stems from a deeper architectural flaw in current cloud security tooling: siloed observability and lack of provenance. CNAPPs such as Wiz and Orca excel at static configuration analysis but offer no visibility into dynamic application behavior. Host EDRs operate in isolation from cloud identity and privilege systems, while cloud-native solutions like GuardDuty can observe cloud API calls but are blind to the processes or users that trigger them. As a result, modern attacks that exploit applications, pivot through workloads, and culminate in cloud data access are either detected too late—or not at all.
 
-To address these limitations, we introduce the novel concept of \textbf{Provenance-based Cloud Application Detection and Response (P-CADR)}. P-CADR brings provenance principles to runtime cloud security by constructing \textbf{Cross-Layer Provenance Graphs (CPGs)} that unify and correlate telemetry from the application, container, and cloud control planes. These graphs allow security teams to trace fine-grained causal chains—such as connecting a SQL injection to a webshell execution and subsequent exfiltration via S3 APIs. Unlike host-centric provenance systems or siloed anomaly detectors, P-CADR provides real-time, full-stack observability, enabling comprehensive threat attribution and contextual response.
+The MOVEit breach~\cite{progress_moveit_cve2023}, depicted in Figure~\ref{fig:example:moveit}, demonstrates the operational urgency for this shift. A SQL injection at the application layer triggered remote shell access in the workload layer, followed by unauthorized cloud data access through inherited IAM credentials. Each stage of the attack occurred in a different operational plane, but existing tools failed to observe or correlate the entire chain in real time. Even when alerts were raised, they lacked causality, context, and triage guidance. Some tools will flag isolated symptoms, such as anomalous file access or role assumption, but none supported cross-layer reasoning. Incidents like Log4Shell~\cite{cisa_log4j} and Spring4Shell~\cite{intruder_spring4shell} followed similar trajectories from initial injection to lateral host movement and eventual cloud compromise. Without unified telemetry and causally linked reasoning, security teams are left chasing fragments rather than coherent attack narratives.
 
-What distinguishes P-CADR is its holistic and layered architecture. It continuously collects structured, causally linked telemetry from security-critical points in the application, kernel/runtime, and cloud control plane. Rather than treat each source as an isolated log stream, P-CADR fuses them into a \textit{Unified Provenance Graph (UPG)}. This model captures every critical event—function calls, syscalls, IAM actions, data movements—and encodes how they influence each other across the cloud stack. The unified provenance enables new classes of detection, revealing stealthy multi-stage attacks that span multiple domains, and provides a solid foundation for automating incident triage and response.
 
-P-CADR's novelty lies not just in linking layers, but in how it does so: using in-kernel log reduction for scalable telemetry, application-level instrumentation for security-aware observability, and advanced subgraph-based anomaly detection enhanced with embedding reuse for low-latency decisions. It is the first system to offer real-time detection and response that is fully provenance-informed, semantically rich, and cloud-native in design. P-CADR detects not only that an attack occurred, but how and why, offering security teams a full narrative rather than fragmented alerts.
+To address these gaps, we introduce the novel notion of Provenance-based Cloud Application Detection and Response (P-CADR). P-CADR extends provenance principles to the runtime cloud stack by constructing {\it Cross-Layer Provenance Graphs (CPGs)}. These graphs unify semantically rich telemetry from the application, container, and cloud layers, enabling causal reasoning across traditionally disjoint components. This design provides full-stack observability and traceability, allowing security teams to trace attack causality end-to-end. Unlike traditional systems that detect isolated anomalies, P-CADR infers attack narratives by encoding {\it how}, {\it where}, and {\it why} an event occurred in its broader context. It empowers security teams with actionable, explainable incident graphs and enables autonomous response actions mapped to cloud-native APIs. We design algorithms and architectures to leverage CPGs for detecting complex threats and responding in real time, effectively augmenting the transparency of cloud systems and enabling security teams to see the full story of an intrusion, not just isolated fragments.
+
+We propose a three-pronged approach. First, we will develop a cloud-native instrumentation layer using eBPF to collect semantically rich telemetry across all layers (Task~\ref{task:1}). Second, we will construct unified Cross-Layer Provenance Graphs (CPGs) that encode causal interactions using entity linkage, temporal correlation, and semantic motifs (Task~\ref{task:2}). Third, we will develop a provenance-graph-based detection and response engine capable of recognizing complex attack chains (Task~\ref{task:3}).
+
 
 % \begin{wrapfigure}{L}{.40\linewidth}
 \begin{figure}[t!]
     \centering \includegraphics[width=0.90\textwidth]{fig/arch.png}
-    \caption{Workflow of our proposed P-CADR system.}
+    \caption{End-to-end workflow showing our three interconnected tasks}
     \label{fig:arch}
     \end{figure}
 % \end{wrapfigure}
 
-We propose a three-pronged approach. First, we will develop a cloud-native instrumentation layer using eBPF to collect semantically rich telemetry across all layers (Task~\ref{task:1}). Second, we will construct unified \emph{Cross-Layer Provenance Graphs} (CPGs) that encode causal interactions using entity linkage, temporal correlation, and semantic motifs (Task~\ref{task:2}). Third, we will develop a provenance-graph-based detection and response engine capable of recognizing complex attack chains and orchestrating contextual mitigations through cloud-native automation (Task~\ref{task:3}).
+
 
 \section*{Methods}
 
-\Task{Cross-Layer Runtime Observability Using eBPF}{task:1}
+\Task{Cross-Layer Runtime Observability Using eBPF}{task:1} Modern attacks often traverse application, workload, and cloud control layers, yet existing security agents remain blind to these multi-layered threat paths. They suffer from poor coverage of interpreted runtimes, lack correlation with cloud APIs, and incur high overhead, especially in containerized, ephemeral environments. We will address these limitations by building a unified observability layer that captures and correlates security-relevant events across all layers.
 
-Runtime visibility across application, container, and cloud control planes remains fragmented. While CNAPPs claim broad coverage, they largely function as glorified EDRs and fall short of understanding application-layer logic or cloud-native privilege flows. Tools like Wiz and Orca provide posture visibility but lack meaningful runtime detection. Most CNAPPs reduce detection to alerting on process starts or hash-based signatures, which cannot capture nuanced multi-step attacks like MoveIT.
+\begin{wrapfigure}{R}{.30\linewidth}
+    \centering \includegraphics[width=0.30\textwidth]{fig/uprobe-chain.pdf}
+    \caption{Workflow for identifying and instrumenting security-critical application functions using NLP-guided analysis and eBPF uprobes.}
+    \label{fig:example:uprobe}
+    \vspace{-2ex}
+\end{wrapfigure}
 
-We will build a distributed observability system that fuses telemetry from three layers, using \textbf{eBPF as the central collection mechanism}. eBPF enables efficient, in-kernel instrumentation with negligible overhead and extensibility to both kernel and user-space events. Our system will attach \textit{uprobes} to trace application-layer functions (e.g., SQL eval, template rendering, deserialization), \textit{kprobes} to monitor syscall-level activities (e.g., execve, fork, open), and integrate cloud telemetry streams such as AWS CloudTrail, STS AssumeRole logs, and VPC Flow Logs to capture control plane activity.
+Our architecture will leverage \textbf{eBPF as a programmable, low-overhead instrumentation substrate}, enabling dynamic tracing of both user-space and kernel-space activity. As shown in Figure~\ref{fig:example:uprobe}, we will develop a workflow that identifies and prioritizes security-critical application functions using NLP over MITRE ATT\&CK and documentation sources. We will then attach \textit{uprobes} to the selected functions for tracing high-level application behavior (e.g., query evaluation, template rendering). In parallel, \textit{kprobes} will monitor low-level system calls (e.g., \CodeIn{execve}, \CodeIn{connect}), and cloud API modules will collect telemetry from CloudTrail, STS, VPC Flow Logs, and Kubernetes audit trails. Each event will be enriched with container metadata (e.g., cgroup, pod, namespace), execution context (PID, UID, IAM identity), and correlation tags, then joined in-kernel using extended BPF maps to minimize overhead and preserve temporal causality.
 
-Each event will be tagged with rich provenance metadata: PID namespace, cgroup lineage, IAM session, execution context, and time. We will use extended BPF maps to cache session identities, avoid redundant queries, and facilitate low-overhead joins across system and cloud events. In-kernel filtering will suppress benign noise and preserve only security-relevant causal links.
+In the MOVEit breach scenario, our system would capture the SQL injection through an application-layer uprobe, trace the shell spawn via \CodeIn{execve}, monitor IAM escalation through STS logs, and record S3 exfiltration, all causally linked in a unified telemetry graph. We will deploy our instrumentation across AWS EKS clusters, simulate multi-stage attacks using Caldera~\cite{caldera} and Atomic Red Team~\cite{atomicredteam}, and evaluate trace completeness, data fidelity, and CPU/I/O overhead.
 
-In the MoveIT case, our stack will capture the SQL injection using a uprobe on SQL query parsing, trace the shell spawn via execve, track the IAM role usage through STS calls, and link it to the S3 PutObject operation—reconstructing the entire causal chain across all layers. This is currently infeasible with CNAPPs or standalone host sensors.
 
-We will deploy our instrumentation across AWS EKS clusters, simulate multi-stage attacks using Caldera and Atomic Red Team, and evaluate trace completeness, data fidelity, and CPU/I/O overhead. Baseline comparisons will include Falco~\cite{falco}, Tetragon~\cite{tetragon}, and commercial agents from Wiz and CrowdStrike.
 
-\Task{Cross-Layer Provenance Graph Construction (CPG)}{task:2}
 
-Cloud-native environments introduce significant challenges for provenance graph construction: identity mismatches across layers, asynchronous event timing, and transient execution environments. CloudTrail events may be delayed by minutes, while syscall traces are millisecond-level. Moreover, containers scale dynamically and inherit IAM roles without persistent identifiers.
+\Task{Cross-Layer Provenance Graph Construction (CPG)}{task:2} While Task~1 will enable telemetry collection across application, kernel, and cloud layers, raw logs alone remain insufficient for attack attribution. The key challenge is correlation: identities diverge across layers (e.g., IAM roles vs containers), timestamps are often misaligned, and ephemeral processes or containers lack persistent identifiers. Existing provenance models cannot unify these fragmented signals, nor can they tie host-side activity to cloud-side consequences. Without precise correlation, defenders are left with disconnected clues and incomplete attack narratives.
 
-We will build \textbf{Cross-Layer Provenance Graphs (CPGs)} to encode runtime causality across application, container, and cloud layers. Nodes will represent system-level entities such as SQL calls, processes, containers, IAM sessions, and cloud APIs. Edges will denote both direct causality (e.g., spawn, read, assume-role) and inferred links based on timing and shared execution contexts.
+We will address this by constructing real-time Cross-Layer Provenance Graphs (CPGs) that fuse heterogeneous telemetry into a single causal structure. To solve the correlation problem, we will use application-layer hooks to intercept AWS SDK calls, logging explicit links between processes and cloud API actions. For unhooked events, we will apply time-and-entity correlation, matching processes that initiate connections to cloud endpoints with subsequent CloudTrail events, augmented by cloud metadata such as instance IDs and request IDs. IAM roles will be represented as nodes, and privilege transitions via AssumeRole will form causal edges connecting roles, API calls, and originating processes. We will resolve identity mismatches using metadata fingerprinting, fuzzy role matching, and container ancestry tracking~\cite{huo2023semparser,le2023log,nawaz2021fuzzy}. Temporal misalignment will be addressed with adaptive windowing~\cite{bifet2007learning} and entropy-based alignment~\cite{makanju2010evaluation}.
 
-To unify identities, we will develop a metadata harmonization engine that fuses low-level runtime metadata (e.g., PID, cgroup, container ID) with cloud context (e.g., STS session name, role ARN, API caller identity). We will resolve temporal drift through a sliding-window alignment mechanism that reorders and merges asynchronous events using local clocks and density metrics. The result will be an incrementally constructed, high-fidelity causal graph updated in real time.
+Figure~\ref{fig:example:cpg} illustrates how the MOVEit attack will be captured end-to-end, linking SQL injection, shell spawn, credential access, IAM role usage, and S3 exfiltration in a unified graph. This graph structure enables precise investigation and forms the basis for Task~3, where we will apply graph-based deep learning techniques to detect anomalous paths and unseen attack patterns. We will evaluate CPGs based on fidelity against expert-labeled traces, ingestion latency under burst load, and memory overhead in continuous deployment.
 
-In the MoveIT scenario, the CPG will reveal a coherent path from an SQL call in a webserver, to a spawned shell, to a file read of credentials, to an AWS role assumption, and finally to a PutObject S3 API. These edges will not only reflect causal order but be annotated with semantic motifs to indicate patterns like RCE, privilege escalation, and lateral movement.
-
-% \begin{wrapfigure}{L}{.40\linewidth}
 \begin{figure}[t!]
     \centering \includegraphics[width=0.99\textwidth]{fig/graph-example.png}
-    \caption{Example Cross-Layer Provenance Graph (CPG) for MoveIT vulnerability.}
-    \label{fig:arch}
-    \end{figure}
-% \end{wrapfigure}
+    \caption{Example Cross-Layer Provenance Graph (CPG) for the MOVEit attack scenario.}
+    \label{fig:example:cpg}
+\end{figure}
 
-We will evaluate the CPG engine by measuring graph accuracy against hand-labeled traces, ingestion latency under burst load, and memory overhead in continuous deployment. We will compare against CamFlow~\cite{camflow}, AWS Detective, and enterprise graph solutions, focusing on their inability to construct cross-layer runtime graphs with fine-grained causality.
+\Task{Provenance-Guided Detection and Automated Response}{task:3} The CPGs constructed in Task~\ref{task:2} will serve as the foundation for this downstream threat detection task. Traditional tools lack the ability to trace fine-grained, multi-step attack chains and often miss stealthy tactics that span across system and cloud layers. They rely on static signatures or coarse anomaly metrics, producing noisy alerts with limited context. By leveraging rich, real-time CPGs, we can detect complex adversarial behaviors with greater precision, explainability, and coverage.
 
-\Task{Provenance-Guided Detection and Automated Response}{task:3}
-
-Even with unified graphs, detecting adversarial activity in the cloud remains difficult. Modern attacks are stealthy, span multiple layers, and often mimic benign behavior. Traditional rule-based systems like Sigma are brittle, and anomaly detection methods trained on single-layer logs generate noisy false positives. Moreover, most tools stop at alerting and lack the ability to execute meaningful responses grounded in the context of an unfolding attack.
-
-We will build a CPG-powered detection engine that applies graph learning techniques over streaming provenance subgraphs. We will extract candidate subgraphs using sliding windows and score them using contrastive learning and structural anomaly models. To distinguish adversarial motifs from benign behavior, we will use GNN architectures like GraphSAGE and GAT, trained on labeled traces and contrastive pairs to identify malicious execution patterns.
-
-Our system will convert anomalous subgraphs into \textbf{incident graphs}, which encapsulate the full causal path from initial exploitation to impact. These incident graphs will be mapped to automated mitigations through a response module integrated with AWS APIs. For example, if a low-privilege pod spawns a shell and accesses an S3 bucket using a suspicious IAM role, the system will revoke the session, isolate the pod, and rotate credentials.
-
-The novelty of our approach lies in transforming causal subgraphs into explainable and actionable response plans. Unlike rule-based detectors, our system can generalize to unseen attack patterns, adapt to evolving environments, and offer contextual justifications that SOC analysts can audit. The integration of GNNExplainer will support interpretable subgraph explanations, enabling human-in-the-loop validation.
-
-We will evaluate detection precision, false positive rates, and response latency using labeled traces from MoveIT, XZ Utils, and Spring4Shell. Human-centered evaluations will assess the clarity, completeness, and utility of our incident graphs in live triage settings.
-
-% Cloud Detection and Response (CDR) systems are essential for identifying threats in cloud environments, where worker nodes across a cloud cluster generate extensive audit logs that are centrally collected and analyzed. In a typical CDR workflow, these logs are gathered at a central point to detect suspicious activity, using either signature-based or anomaly-based detection methods. Signature-based methods \cite{elasticdetectionrules,chronicledetectionrules} rely on matching known threat patterns, which limits them to detecting established attacks. Anomaly-based methods \cite{aljawarneh2018anomaly,cai2021structural}, however, detect deviations from typical behavior, making them better suited for identifying novel and evolving threats.
-
-% \begin{wrapfigure}{R}{.35\linewidth}
-%     \centering \includegraphics[width=0.35\textwidth]{fig/example.pdf}
-%     \caption{An example provenance graph showcasing the downloading of a malicious file. }
-%     \label{fig:example:provenance}
-%     \vspace{-2ex}
-% \end{wrapfigure}
-
-% Recent advances in anomaly detection leverage provenance techniques \cite{yangprographer,flash2024,cheng2023kairos}, which build data provenance graphs from audit logs to track sequences of related events. In these graphs, nodes represent system entities like processes or files, and edges depict system calls, such as read or fork, that define interactions between entities, as shown in Figure~\ref{fig:example:provenance}. Analyzing these graphs enables systems to detect complex, multi-step malicious behaviors that traditional methods might miss. This approach improves detection by identifying subtle, evolving attack patterns, allowing machine learning models trained on benign patterns to flag anomalies signaling potential threats.
-
-
-
-% Unfortunately, centralized CDR systems that rely on Security Information and Event Management (SIEM) platforms face significant challenges in scalability and efficiency within cloud clusters. SIEM systems typically aggregate and store massive volumes of audit logs from distributed worker nodes. When alerts are generated, Security Operations Centers (SOCs) must investigate by writing complex queries, often in languages like Kusto Query Language (KQL), to extract relevant data from these logs. This manual process is time-intensive, requires substantial expertise, and is prone to human error, especially as analysts interpret complex relationships within provenance graphs to distinguish benign from malicious behavior. Additionally, centralizing audit logs for processing creates data bottlenecks, network congestion, and delays in response times, ultimately slowing SOC operations and leaving incidents unresolved.
-
-% This proposal addresses these challenges with two main objectives. First, we will develop \Sysa, a decentralized detection system leveraging Federated Learning (FL) to enhance threat detection while minimizing centralized data transfers. \Sysa enables worker nodes to process audit logs locally, supporting scalable, cloud-native detection without the network overhead of centralized systems (Task~\ref{task:1}). Integrating FL into CDR systems presents challenges due to the heterogeneous, non-IID log distributions across nodes, leading to conflicting updates that degrade model performance \cite{bonawitz2019towards} and data imbalances that skew outcomes and reduce accuracy \cite{guo2023new,zhao2018federated}.
-
-% To overcome these issues, we combine FL with Graph Neural Networks (GNNs) to enable decentralized training directly on provenance graphs from worker nodes, removing the need for raw data sharing. Our approach introduces a novel FL aggregation algorithm with layer-wise coefficients to capture latent proximities among local updates, refined through confidence-based entropy minimization on proxy datasets. This system will incorporate worker-specific aggregation, adaptive learning rates, and asynchronous updates for faster model convergence. We will explore GNN architectures like GraphSAGE~\cite{lo2022graphsage} to capture structural and temporal interactions in provenance graphs, allowing for the detection of multi-step attacks. Additionally, attention mechanisms~\cite{vaswani2017attention} and Spatio-Temporal Graph Networks~\cite{yu2017spatio} will enhance embedding precision and capture evolving patterns, making \Sysa a scalable, cloud-native alternative to traditional CDR by minimizing centralized data transfer.
-
-% Secondly, we introduce \Sysb, an AI-driven SOC assistant that automates the generation of investigation queries for SIEM systems. Using a pre-trained language model (LLM), \Sysb interprets SOC investigation prompts to generate precise, contextually relevant queries. This process involves parsing the prompt to identify key data fields and entities, constructing a structured query, and refining it through an iterative, confidence-based review. By automating query generation, \Sysb enables SOC teams to conduct faster, more accurate investigations, bridging expertise gaps and streamlining response workflows (Task~\ref{task:2}).
-
-
-
-
-
-
-
-% % \begin{wrapfigure}{L}{.40\linewidth}
-% \begin{figure}[t!]
-%     \centering \includegraphics[width=0.80\textwidth]{fig/arch-e2e-cdr.pdf}
-%     \caption{Workflow of our proposed decentralized threat detector and AI-assisted alert investigation framework. }
-%     \label{fig:arch}
-%     \end{figure}
-% % \end{wrapfigure}
-
-
-
-% \noindent\textbf{PI Qualifications: }
-% PI Hassan is a leader in provenance-based system auditing and threat detection. His work includes developing methods for capturing audit logs from large-scale systems in a highly storage- and network-efficient manner~\cite{winnower2018,omegalog2020,inam2022faust,dossier,bates2017transparent,paccagnella2020custos}, as well as developing graph-powered machine learning techniques to detect stealthy threats with high precision~\cite{provthings2018,provdetector2020,rapsheet2020,flash2024}. PI Hassan has also led efforts to streamline system log data, reducing log sizes and effectively summarizing long-term attack patterns~\cite{rapsheet2020,swift2020,inam2023sok,nodoze2019,approx}. His credentials include two patents in the security field and successful industry collaborations with NEC Labs, NortonLifeLock, and Corelight.
-
-
-% \section*{Methods}
-
-
-% \Task{\Sysa: Leveraging Federated Learning for Decentralized Cloud Threat Detection}{task:1} In cloud environments, integrating models from diverse worker nodes in a Federated Learning (FL) system presents unique challenges due to the heterogeneous, non-IID distributions of log data across nodes. Each node's local log data contains distinct graph structures and node features, leading to diverging model parameters across cloud nodes. Traditional FL methods like \textsc{FedAvg}~\cite{mcmahan2017communication} treat all updates uniformly, disregarding conflicting gradient directions, which often diminishes collaborative benefits and can result in worse model utility than isolated training.
-
-% \proposedwork{To address these challenges, we propose a novel FL aggregation algorithm tailored to GNN structures for synchronizing worker node models and accelerating global model convergence.} This algorithm uses \textit{layer-wise coefficients} $\Lambda = {\lambda_{i}^l}{i \in [N]}^{l \in [L]}$ that are \textit{learned} to capture latent proximities among local updates, adapting coefficients through each GNN layer depth $l \in [L]$: $\theta \leftarrow \gA(\Lambda, \Theta) \equiv { \sum{i=1}^N \lambda_i^l \theta_{i}^{l}}{l=1}^L$, where $\gA$ is the FL model aggregation on the server, and $\theta$ and $\Theta={\theta_i}{i\in[N]}$ represent the global and local node model parameters, respectively. To optimize aggregation coefficients, we minimize the \textbf{\textit{entropy}} of the merged model $\theta$ on a proxy dataset $\tilde{\gX}$:
-% \vspace{-1ex}
-% \[
-% \Lambda^* = \underset{\Lambda}{\arg\min} \gL_{\Lambda, \tilde{\gX}} :=   \mathds{H} \left[   f(\tilde{\gX}; \gA(\Lambda, \Theta) ) \right],
-% \]
-% \vspace{-3ex}
-
-% where $\mathds{H}$ represents entropy, indicating model prediction confidence. The proxy dataset $\tilde{\gX}$, a small batch of synthetic log data shared voluntarily by nodes, reduces prediction uncertainty and mitigates non-IID effects. Additionally, we design \textit{personalized node models} by learning node-specific coefficients $\{\Lambda_{i}\}_{i\in[N]}$, which adjust parameter contributions based on data distribution similarity, ensuring nodes benefit from global collaboration while retaining models tailored to unique data. This approach is compatible with existing FL methods, like \textsc{FedProx}~\cite{li2020federated}, further enhancing model personalization.
-
-% \begin{wrapfigure}{R}{.40\linewidth}
-%     % \begin{figure}[t!]
-%     \centering \includegraphics[width=0.40\textwidth]{fig/arch.pdf}
-%     \caption{Workflow of our proposed decentralized CDR.}
-%     \label{fig:arch}
-%     % \end{figure}
-%   \end{wrapfigure}
-
-%   Our proposed CDR system, \Sysa, will incorporate this FL aggregation to create an accurate and scalable anomaly detector, as illustrated in Figure~\ref{fig:arch}. During the training phase, we will use FL to train GNN models across distributed worker nodes using benign log data, allowing the system to learn patterns of normal behavior without centralizing sensitive logs. This decentralized approach enables each worker node to contribute to the model while retaining data locally, building a comprehensive understanding of typical system activities across diverse environments. In the detection or runtime phase, these trained models will then analyze incoming log data for deviations from learned benign patterns, flagging anomalous activities that may indicate potential threats.
-  
-%   To handle scalability and complexity, we will explore GNN architectures such as GraphSAGE~\cite{hamilton2017inductive} for inductive learning on large graphs, and ChebNet~\cite{tang2019chebnet} to generalize convolutions across graphs, which is critical for processing large-scale data. Attention mechanisms from Graph Attention Networks~\cite{velivckovic2017graph} will dynamically weigh node importance, enhancing embedding precision. Spatio-Temporal Graph Networks~\cite{yu2017spatio} will capture evolving patterns over time, addressing the temporal aspect of system logs. For model efficiency within the FL setup, we will implement adaptive learning rate techniques and asynchronous updates~\cite{ye2022eco}. Additionally, to reduce processing delays common in traditional GNN models, we will adopt efficient architectures like GraphSAGE and ChebNet, which enhance processing speed and scalability in large cloud environments. Through these optimizations, \Sysa aims to provide a high-performance, scalable solution for cloud-native anomaly detection.
-
-
-
-% \eval  We will evaluate system scalability by incrementally increasing the number of worker nodes and data volume, monitoring key metrics such as throughput, latency, and resource utilization (CPU and memory) across diverse network environments. For performance benchmarking, we will use DARPA datasets along with additional, systematically generated benign and malicious datasets. Malicious data will be created using MITRE Caldera~\cite{caldera} and Infection Monkey~\cite{infectionmonkey}, tools designed to emulate a broad range of APTs scenarios by replicating complex attack patterns and testing across diverse network configurations. To generate realistic benign logs, we will employ Generative Adversarial Networks (GANs)~\cite{graphrnn,graphvae} which capture the structure and dynamics of typical enterprise logs, producing synthetic, diverse benign data with essential characteristics for effective CDR evaluation.
-
-
-
-
-
-% \Task{\Sysb: An AI-Enhanced System for Efficient Alert Investigation in SOCs}{task:2} SOC teams often rely on investigation queries in languages like Kusto Query Language (KQL) to analyze alerts from CDR systems, a process that can be time-consuming and demands significant expertise~\cite{esgstudy,alahmadi202299socstudy}. Automating the conversion of investigation prompts into precise SIEM queries could improve SOC efficiency, enabling analysts to focus more on responding to threats. Current automated tools, like Microsoft's Copilot for Security (CFS), have shown limitations in accuracy. For example, when tasked to retrieve all external emails sent by a user on a specific date, CFS returned only five results due to syntax errors, whereas manual analysis identified 17 relevant emails~\cite{microsoftseccopilot}. This highlights the need for a solution that can consistently generate accurate SIEM queries to enhance alert investigations.
-
-
-
-% \proposedwork{To address the above challenges, we develop an LLM-based assistant, \Sysb, to generate effective investigation queries for SIEM systems from SOC prompts.} Inspired by structured methodologies that improve language model reasoning on complex tasks~\cite{ouyang2023structured}, \Sysb follows a systematic workflow that enhances SOC response efficiency and accuracy. The approach involves generating structured instructions, followed by iterative query construction and refinement phases to produce high-quality, deployable query outputs tailored to SOC requirements.
-
-% \begin{itemize}[leftmargin=*,noitemsep,topsep=-1pt]
-    
-%     \item \textit{Structured Instruction Generation}: The process begins with \Sysb generating a structured instruction set based on the SOC investigation prompt. This structured prompt guides the LLM, outlining clear parameters such as required data fields, relevant event types, specific entities (e.g., user IDs, IP addresses), and contextual filters. These instructions serve as a foundational blueprint, helping the LLM interpret the query requirements accurately and establish the investigation’s objectives.
-    
-%     \item \textit{Structured Query Generation and Step-by-Step Reasoning}: Using the structured instruction, the LLM constructs an initial investigation query, breaking down the prompt into logical steps. This phase involves identifying and assembling the necessary building blocks—such as data fields, operators, functions, and relationships -- into a coherent query flow. The LLM applies step-by-step reasoning to ensure that each component aligns with the investigation's intent, translating prompt instructions into specific SIEM operations like `where` and `join` clauses, and verifying that the syntax and logic adhere to SIEM standards.
-
-%     \item \textit{Query Validation and Confidence-Based Refinement}: After generating the preliminary query, \Sysb initiates a confidence-based review and refinement process. Each part of the query is evaluated for accuracy and logical consistency, with confidence scores assigned to each component. Any segments with low confidence undergo iterative refinement, where \Sysb revisits the structured instruction and query components, making adjustments to improve performance and coherence. This feedback loop enables \Sysb to iteratively enhance the query until it meets predefined accuracy and efficiency thresholds.
-    
-%     \item \textit{Final Output Generation}: Upon completing the confidence-based refinement, \Sysb produces a finalized investigation query that is ready for SOC deployment. The resulting query is both context-aware and optimized for effective alert investigation, allowing SOC teams to quickly differentiate between false alarms and genuine threats without extensive manual input.
-    
-
-% \end{itemize}
-
-% This structured, multi-phase approach ensures that \Sysb provides SOC teams with precise, contextually accurate queries, streamlining alert investigation workflows and reducing dependency on manual query formulation. By incorporating step-by-step reasoning and iterative refinement, \Sysb enables SOCs to handle alerts more effectively and respond to threats with high confidence and minimal error.
-
-% \eval The evaluation of \Sysb’s query generation will focus on accuracy, efficiency, and real-world applicability. Accuracy will be measured by comparing \Sysb-generated queries to those created by SOC analysts, using precision and recall metrics to assess the retrieval of relevant log data without excess noise. Efficiency will be evaluated by calculating time saved in query formulation, comparing \Sysb’s speed to that of human analysts to gauge its impact on SOC response times. To test real-world applicability, \Sysb will be applied to SOC-like prompts using DARPA datasets \cite{darpatc, darpaoptc} or similar logs from controlled environments, analyzing its handling of prompts with varied complexity. We will track false positive and negative rates in incident detection to assess performance across different scenarios.
-
-
-
-
-% \begin{figure}[t!]
-%     % \begin{wrapfigure}{R}{.50\linewidth}
-%         \centering \includegraphics[width=0.99\textwidth]{fig/kql-query.pdf}
-%         \caption{An in-depth illustration of the QueryAI framework for investigation. The workflow begins with structured instructions that prompt the LLM to generate a KQL query tailored to investigate suspicious file deletion activity. The process initiates with the query generation and step-by-step reasoning stage, forming the initial query structure. Each generated query undergoes a confidence-based review and refinement process, with confidence scores guiding iterative adjustments. This cycle is repeated until reaching a refined query that meets accuracy and relevance criteria.}
-%         \label{fig:kqlquery}
-%     % \end{wrapfigure}
-% \end{figure}
-
-
-% \section*{Expected Results}
-
-% A Ph.D. student, under the guidance of PI Hassan at the University of Virginia, will work on this project to bridge academic research with industry needs by advancing CDR systems through scalable, decentralized threat detection and response methods tailored for cloud environments. The project's timeline is outlined in Figure~\ref{fig:sched}. This research will yield several key outcomes:
-
-% \begin{wrapfigure}{R}{.45\linewidth}
-%     % \begin{figure}[t!]
-%     \centering \includegraphics[width=0.45\textwidth]{fig/schedule-e2e.pdf}
-%     \caption{Anticipated timeline of the proposed work.}
-%     \label{fig:sched}
-%     % \end{figure}
-%     \vspace{-2ex}
-%   \end{wrapfigure}
-
-% \begin{itemize}[leftmargin=*,noitemsep,topsep=-1pt]
-%     \item We will develop \Sysa, a cloud-native, decentralized detection system using FL and GNNs to process logs locally, reducing centralized data transfers. Deliverables for \Sysa, available by Q3 2025, include the FL-GNN integration codebase, pre-trained model weights,  optimized GNN architectures, and initial datasets of benign and adversarial logs to serve as benchmarks for the cloud security community.
-
-%     \item We will design \Sysb, an AI-driven SOC assistant that automates investigation query generation from SOC prompts, enhancing alert investigation. \Sysb will leverage a pre-trained LLM and threat intelligence for context-aware query generation, enabling SOCs to investigate alerts without raw log access. The release, scheduled for Q4 2025, includes \Sysb's codebase,and a technical report.
-    
-%     \item Comprehensive deliverables, including curated datasets, code, model weights, and documentation, will be available by Q1 2026. Findings, methodologies, and benchmarks on scalability and accuracy will be presented at IEEE S\&P, USENIX Security, and ACM CCS. We will also offer hands-on tutorials and maintain an online repository to support ongoing updates and community contributions.
-    
-% \end{itemize}
+We will build a detection engine that processes streaming subgraphs from CPGs using a hybrid learning pipeline. We will extract candidate subgraphs using sliding windows and model them using a combination of unsupervised GNN embeddings, contrastive learning to distinguish malicious from benign motifs, and supervised GNN classifiers such as GraphSAGE and GAT to assign semantic labels. PI Hassan’s prior system, Flash~\cite{flash2024}, successfully detected APTs on single-host provenance graphs; here, we will extend that methodology to multi-layer CPGs. To accelerate inference, we will incorporate embedding recycling, a technique introduced in Flash~\cite{flash2024}, to avoid recomputing node embeddings for stable regions of the graph. To improve analyst trust and enable human-in-the-loop validation, we will adapt GNNExplainer~\cite{ying2019gnnexplainer} and PGExplainer~\cite{luo2020parameterized} to generate subgraph-level justifications that highlight the key entities and transitions responsible for triggering an alert. We will evaluate detection performance using traces from MOVEit, XZ Utils, Spring4Shell, and custom APT simulations. Metrics will include detection precision, false positive rate, response latency, and accuracy in triage tasks.
     
 \section*{Funds Needed}
 
-We request cash funding to cover personnel costs, including \$60,000 for one year's salary for a graduate student (covering stipend, tuition, health insurance) and \$15,000 for one month of summer salary for PI Hassan. Additionally, we seek \$25,000 in AWS Promotional Credits to manage computational and storage demands using Amazon EC2 and Amazon S3. Our project involves running experiments on the p3.2xlarge instance for ML tasks at \$3.06 per hour, 24 hours a day, 5 days a week, totaling \$17,625.60 annually for EC2. We also require secure storage of 5 TB on Amazon S3 for storing and sharing system logs produced in Task~\ref{task:1}, with operational costs totaling \$2,580 annually. This \$25,000 in AWS Promotional Credits will also accommodate potential fluctuations and unforeseen costs.
+We request \$60,000 for one year of graduate student support (stipend, tuition, health insurance) and \$15,000 for one month of summer salary for PI Hassan. Additionally, we seek \$25,000 in AWS Promotional Credits to support ML workloads and data storage. Our experiments on p3.2xlarge instances (\$3.06/hr, 24/5) will cost \$17,625.60 annually. We also require 5 TB of secure Amazon S3 storage for Task~\ref{task:1} logs, totaling \$2,580/year. The credits will cover these expenses and buffer against variability.
 
